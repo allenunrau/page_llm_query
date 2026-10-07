@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Query Chrome's built-in on-device LLM (Gemini Nano), keep a history of queries, re-run them, and delete them.",
   "minimum_chrome_version": "138",
-  "permissions": ["storage", "unlimitedStorage", "sidePanel", "scripting", "tabs"],
+  "permissions": ["storage", "unlimitedStorage", "sidePanel", "scripting", "tabs", "debugger"],
   "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "background.js" },
   "side_panel": { "default_path": "sidepanel.html" },

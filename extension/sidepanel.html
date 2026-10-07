@@ -18,10 +18,13 @@
     <input id="url-input" name="url" type="url" autocomplete="off" placeholder="Optional URL to query instead of the open page">
     <label for="query-input" class="sr-only">Query</label>
     <textarea id="query-input" name="query" autocomplete="off" rows="4" placeholder="Ask the on-device model… (Ctrl/Cmd+Enter to run)"></textarea>
+    <label class="check"><input type="checkbox" id="cert-input" name="cert"> Ask about the site's HTTPS certificate instead of the page text</label>
     <div class="row">
       <button type="submit" id="run-btn" class="primary">Run</button>
       <button type="button" id="stop-btn" hidden>Stop</button>
+      <button type="button" id="cert-btn">Show certificate</button>
     </div>
+    <pre id="cert-view" hidden></pre>
     <progress id="download" max="1" hidden></progress>
   </form>
 
@@ -34,6 +37,7 @@
     <p id="empty" class="muted" hidden>No saved queries yet.</p>
   </section>
 
+  <script src="certificate.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 </html>
