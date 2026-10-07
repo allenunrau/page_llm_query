@@ -3,6 +3,7 @@
 Side-panel extension that queries Chrome's built-in on-device model (Gemini Nano) via the Prompt API.
 
 - The subject of each query is the page open in the active tab (or its selected text). Give a URL in the URL field, or in the query itself, to query that page instead
+- **Show certificate** displays the HTTPS certificate of the open page (subject, SANs, issuer, validity, TLS protocol/cipher, SHA-256 fingerprint). Tick *Ask about the site's HTTPS certificate* to query those details with the model instead of the page text. Chrome has no extension API for certificates, so this briefly attaches the debugger (`debugger` permission); Chrome shows its "started debugging this browser" banner for a moment while it reads. Works on the open page only, not on a URL typed into the URL field.
 - Enter a new query and stream the response
 - Query history persisted in `chrome.storage.local`
 - Re-run, edit, copy, or delete any saved query (or delete all)

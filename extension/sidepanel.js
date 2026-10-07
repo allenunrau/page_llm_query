@@ -16,6 +16,9 @@ const emptyEl = $('empty');
 const countEl = $('count');
 const urlInput = $('url-input');
 const subjectEl = $('subject');
+const certInput = $('cert-input');
+const certBtn = $('cert-btn');
+const certView = $('cert-view');
 
 let queries = [];        // newest first
 let runningId = null;    // id of the query currently being run
@@ -60,8 +63,9 @@ async function checkAvailability() {
 // ---------- page content ----------
 const URL_RE = /https?:\/\/[^\s<>"')]+/i;
 const SYSTEM_PROMPT =
-  'You answer the user\'s question about a web page. The page content is provided in the message. ' +
-  'Base your answer on that content and say so if it does not contain the answer.';
+  'You answer the user\'s question about the material provided in the message: either a web page\'s content ' +
+  'or the details of a site\'s HTTPS certificate. Base your answer on that material and say so if it does not ' +
+  'contain the answer.';
 
 function isHttpUrl(u) {
   try { return /^https?:$/.test(new URL(u).protocol); } catch { return false; }
@@ -76,6 +80,8 @@ async function refreshSubject() {
   const tab = await getActiveTab().catch(() => null);
   subjectEl.textContent = urlInput.value.trim()
     ? 'Subject: the URL below'
+    : certInput.checked
+    ? `Subject: HTTPS certificate of ${tab?.url ? new URL(tab.url).hostname : '(no page open)'}`
     : tab?.url ? `Subject: ${tab.title || tab.url}` : 'Subject: (no page open)';
 }
 
@@ -109,13 +115,21 @@ async function readUrl(url, signal) {
 }
 
 // Resolve the subject for an entry: explicit URL, else URL in the query text, else the open page.
+async function readActiveCertificate() {
+  const tab = await getActiveTab();
+  const text = await readCertificate(tab);
+  const host = new URL(tab.url).hostname;
+  return { url: tab.url, title: `HTTPS certificate for ${host}`, text };
+}
+
 async function loadSubject(entry, signal) {
+  if (entry.cert) return readActiveCertificate();
   const url = entry.url || entry.prompt.match(URL_RE)?.[0];
   return url ? readUrl(url, signal) : readActiveTab();
 }
 
 function buildPrompt(entry, page, session) {
-  const header = `Page title: ${page.title}\nPage URL: ${page.url}\n\nPage content:\n"""\n`;
+  const header = `Title: ${page.title}\nURL: ${page.url}\n\nProvided material:\n"""\n`;
   const footer = `\n"""\n\nQuestion: ${entry.prompt}`;
   // inputQuota is in tokens; assume ~3 characters per token to stay safely under it.
   const budget = Math.max(1000, Math.floor((session.inputQuota - session.inputUsage) * 3) - 1200);
@@ -234,7 +248,7 @@ function render() {
 
     li.append(
       el('div', { className: 'q', textContent: q.prompt }),
-      el('div', { className: 'src', textContent: q.source ? `Page: ${q.source.title} — ${q.source.url}` : q.url ? `Page: ${q.url}` : 'Page: the open page when run' }),
+      el('div', { className: 'src', textContent: q.source ? `${q.cert ? 'Certificate' : 'Page'}: ${q.source.title} — ${q.source.url}` : q.url ? `Page: ${q.url}` : 'Page: the open page when run' }),
       answer,
       meta,
       el('div', { className: 'actions' }, rerun, edit, copy, del),
@@ -256,6 +270,7 @@ form.addEventListener('submit', async (e) => {
     id: crypto.randomUUID(),
     prompt,
     url: urlInput.value.trim() || null,
+    cert: certInput.checked,
     response: '',
     createdAt: Date.now(),
     lastRunAt: null,
@@ -264,7 +279,7 @@ form.addEventListener('submit', async (e) => {
   queries.unshift(entry);
   input.value = '';
   urlInput.value = '';
-  refreshSubject();
+  syncCertControl();
   await save();
   runQuery(entry);
 });
@@ -289,7 +304,8 @@ historyEl.addEventListener('click', async (e) => {
     case 'edit':
       input.value = entry.prompt;
       urlInput.value = entry.url || '';
-      refreshSubject();
+      certInput.checked = !!entry.cert;
+      syncCertControl();
       input.focus();
       break;
     case 'copy':
@@ -312,7 +328,30 @@ $('clear-btn').addEventListener('click', async () => {
   render();
 });
 
-urlInput.addEventListener('input', refreshSubject);
+// The certificate belongs to the open page, so it can't be combined with an explicit URL.
+function syncCertControl() {
+  const hasUrl = !!urlInput.value.trim();
+  if (hasUrl) certInput.checked = false;
+  certInput.disabled = hasUrl;
+  certBtn.disabled = hasUrl;
+  refreshSubject();
+}
+
+certBtn.addEventListener('click', async () => {
+  certView.hidden = false;
+  certView.textContent = 'Reading certificate…';
+  try {
+    certView.textContent = await readCertificate(await getActiveTab());
+  } catch (e) {
+    certView.textContent = 'Could not read the certificate: ' + (e.message || e);
+  }
+});
+
+certInput.addEventListener('change', refreshSubject);
+urlInput.addEventListener('input', syncCertControl);
+
+// Single source of truth: version_name in manifest.json.
+$('version').textContent = 'v' + (chrome.runtime.getManifest().version_name || chrome.runtime.getManifest().version);
 chrome.tabs.onActivated.addListener(refreshSubject);
 chrome.tabs.onUpdated.addListener((_id, info) => { if (info.title || info.url) refreshSubject(); });
 chrome.windows.onFocusChanged.addListener(refreshSubject);
