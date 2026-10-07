@@ -349,6 +349,9 @@ certBtn.addEventListener('click', async () => {
 
 certInput.addEventListener('change', refreshSubject);
 urlInput.addEventListener('input', syncCertControl);
+
+// Single source of truth: version_name in manifest.json.
+$('version').textContent = 'v' + (chrome.runtime.getManifest().version_name || chrome.runtime.getManifest().version);
 chrome.tabs.onActivated.addListener(refreshSubject);
 chrome.tabs.onUpdated.addListener((_id, info) => { if (info.title || info.url) refreshSubject(); });
 chrome.windows.onFocusChanged.addListener(refreshSubject);

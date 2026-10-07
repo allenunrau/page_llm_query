@@ -37,3 +37,4 @@ input[type="url"] { width: 100%; margin-top: 6px; padding: 6px 8px; font: inheri
 .check input { margin: 0; }
 pre#cert-view { margin: 8px 0 0; padding: 8px; border: 1px solid var(--border); border-radius: 6px;
   white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.4 ui-monospace, monospace; }
+.version { font-size: 10px; font-weight: normal; opacity: .55; margin-left: 2px; }
