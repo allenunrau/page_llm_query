@@ -14,8 +14,10 @@
 
   <form id="query-form">
     <p id="subject" class="subject muted"></p>
-    <input id="url-input" type="url" placeholder="Optional URL to query instead of the open page">
-    <textarea id="query-input" rows="4" placeholder="Ask the on-device model… (Ctrl/Cmd+Enter to run)"></textarea>
+    <label for="url-input" class="sr-only">URL to query (optional)</label>
+    <input id="url-input" name="url" type="url" autocomplete="off" placeholder="Optional URL to query instead of the open page">
+    <label for="query-input" class="sr-only">Query</label>
+    <textarea id="query-input" name="query" autocomplete="off" rows="4" placeholder="Ask the on-device model… (Ctrl/Cmd+Enter to run)"></textarea>
     <div class="row">
       <button type="submit" id="run-btn" class="primary">Run</button>
       <button type="button" id="stop-btn" hidden>Stop</button>
