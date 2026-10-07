@@ -26,8 +26,13 @@ async function load() {
   const data = await chrome.storage.local.get(STORAGE_KEY);
   queries = data[STORAGE_KEY] || [];
 }
+// Serialized snapshots this panel wrote, so their onChanged echoes can be ignored.
+const ownWrites = new Set();
 function save() {
-  return chrome.storage.local.set({ [STORAGE_KEY]: queries });
+  const json = JSON.stringify(queries);
+  ownWrites.add(json);
+  if (ownWrites.size > 50) ownWrites.delete(ownWrites.values().next().value);
+  return chrome.storage.local.set({ [STORAGE_KEY]: JSON.parse(json) });
 }
 
 // ---------- model ----------
@@ -309,10 +314,13 @@ $('clear-btn').addEventListener('click', async () => {
   render();
 });
 
-// Keep multiple open panels in sync (never overwrite the entry we're streaming into).
+// Keep multiple open panels in sync. Echoes of our own writes are ignored: they can arrive
+// late with a stale snapshot and would replace the entries (and responses) held in memory.
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local' || !changes[STORAGE_KEY] || runningId) return;
-  queries = changes[STORAGE_KEY].newValue || [];
+  const next = changes[STORAGE_KEY].newValue || [];
+  if (ownWrites.has(JSON.stringify(next))) return;
+  queries = next;
   render();
 });
 
