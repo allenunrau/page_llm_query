@@ -28,3 +28,7 @@ li.running { border-color: var(--accent); }
 .a.err { color: var(--danger); }
 .meta { font-size: 11px; opacity: .6; margin-top: 4px; }
 .actions { display: flex; gap: 6px; margin-top: 8px; }
+.subject { margin: 10px 0 0; font-size: 12px; overflow-wrap: anywhere; }
+input[type="url"] { width: 100%; margin-top: 6px; padding: 6px 8px; font: inherit;
+  border: 1px solid var(--border); border-radius: 6px; background: transparent; color: inherit; }
+.src { font-size: 11px; opacity: .7; margin-top: 2px; overflow-wrap: anywhere; }
