@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>On-Device LLM Queries</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header>
+    <h1>On-Device LLM</h1>
+    <span id="status" class="status" role="status">Checking model…</span>
+  </header>
+
+  <form id="query-form">
+    <textarea id="query-input" rows="4" placeholder="Ask the on-device model… (Ctrl/Cmd+Enter to run)"></textarea>
+    <div class="row">
+      <button type="submit" id="run-btn" class="primary">Run</button>
+      <button type="button" id="stop-btn" hidden>Stop</button>
+    </div>
+    <progress id="download" max="1" hidden></progress>
+  </form>
+
+  <section>
+    <div class="row between">
+      <h2>History <span id="count" class="muted"></span></h2>
+      <button type="button" id="clear-btn" class="danger-link">Delete all</button>
+    </div>
+    <ul id="history"></ul>
+    <p id="empty" class="muted" hidden>No saved queries yet.</p>
+  </section>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
